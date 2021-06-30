@@ -35,8 +35,8 @@ while True:
     driver.switch_to.default_content()
     driver.switch_to.frame("searchIframe")
 
-    obj = driver.find_element_by_tag_name('html')
-    obj.send_keys(Keys.END)
+    # obj = driver.find_element_by_tag_name('html')
+    # obj.send_keys(Keys.END)
 
     # last_height = driver.execute_script("return document.body.scrollHeight")
 
@@ -65,27 +65,36 @@ while True:
 
     lis = html.select('#_pcmap_list_scroll_container > ul > li')
     #_pcmap_list_scroll_container > ul > li:nth-child(45) > div._3ZU00._1rBq3 > a:nth-child(1)
-    
+    print(len(lis))
     for idx, li in enumerate(lis):
         el = li.find('span', '_3Apve')
         name = el.get_text()
-        # //*[@id="_pcmap_list_scroll_container"]/ul/li[1]/div[2]/a[1]
-        driver.find_element_by_css_selector('a._3LMxZ').click()
+        print(driver.find_element_by_xpath('//*[@id="_pcmap_list_scroll_container"]/ul/li['+str(idx+1)+']/div[2]/a[1]').text)
+        driver.find_element_by_xpath('//*[@id="_pcmap_list_scroll_container"]/ul/li['+str(idx+1)+']/div[2]/a[1]').click()
+       
+
+
         time.sleep(5)
 
         driver.switch_to.default_content()
         driver.switch_to.frame('entryIframe')
 
+        try:
+            elements = WebDriverWait(driver, 5).until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, ".place_on_pcmap"))
+            )
+        except TimeoutException:
+            print('timout!!!!!!')
+        finally:
+            driver.quit() 
         
-        
-        phone = driver.find_element_by_xpath('/html/body/div[3]/div/div[2]/div[4]/div/div[3]/div/ul/li[1]/div/span[1]')
-        addr = driver.find_element_by_xpath('//*[@id="app-root"]/div/div[2]/div[4]/div/div[3]/div/ul/li[2]/div/span[1]')
+        phone = driver.find_element_by_xpath('//*[@id="app-root"]/div/div[2]/div[4]/div/div[2]/div/ul/li[1]/div/span[1]')
+        addr = driver.find_element_by_xpath('//*[@id="app-root"]/div/div[2]/div[4]/div/div[2]/div/ul/li[2]/div/span[1]')
         print(str(idx)+ '' + name + '  : ' + phone.text+'  : ' + addr.text)
         driver.switch_to.default_content()
         driver.switch_to.frame('searchIframe')
 
-        driver.find_element_by_xpath('//*[@id="container"]/shrinkable-layout/div/app-base/search-layout/div[2]/entry-layout/entry-close-button/button').click()
-
+        # driver.find_element_by_xpath('//*[@id="container"]/shrinkable-layout/div/app-base/search-layout/div[2]/entry-layout/entry-close-button/button').click()
         time.sleep(1)
 
 
