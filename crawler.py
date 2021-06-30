@@ -9,14 +9,47 @@ from bs4 import BeautifulSoup as bs, element
 import time 
 import pandas as pd
 
+def readdata(driver, lis, index) :
+    print(len(lis))
+    for idx, li in enumerate(lis):
+        el = li.find('span', '_3Apve')
+        name = el.get_text()
+        
+        aele = ''
+        try:
+            aele = driver.find_element_by_css_selector('#_pcmap_list_scroll_container > ul > li:nth-child('+str(index+idx+1)+') > div:nth-child(2) > a:nth-child(1)') 
+        except:
+            aele = driver.find_element_by_css_selector('#_pcmap_list_scroll_container > ul > li:nth-child('+str(index+idx+1)+') > div:nth-child(1) > a:nth-child(1)')
+
+        print(name)
+        aele.click()
+       
+        time.sleep(5)
+
+        # driver.switch_to.default_content()
+        # driver.switch_to.frame('entryIframe')
+
+        # # print(driver.page_source)
+        # subhtml = bs(driver.page_source, 'html.parser')
+        # span = subhtml.select('div.place_section_content > ul > li > div > span')
+        # phone = span[0].get_text()
+        # addr = span[2].get_text()
+        # print(str(idx)+ ' ' + name + '  : ' + phone+'  : ' + addr)
+        # driver.switch_to.default_content()
+        # driver.switch_to.frame('searchIframe')
+        # # print(driver.page_source)
+        # # driver.find_element_by_xpath('//*[@id="container"]/shrinkable-layout/div/app-base/search-layout/div[2]/entry-layout/entry-close-button/button').click()
+        # time.sleep(1)
+
+
 # https://map.naver.com/v5/search/경기%20시흥%20왁싱?
 query = quote_plus('경기 안양 왁싱')
 url = f'https://map.naver.com/v5/search/{query}'
 
-chromedriver = './driver/chromedriver'
+chromedriver = './chromedriver'
 options = webdriver.ChromeOptions()
-# options.add_argument('headless')        # headless chrome
-# options.add_argument('disable-gpu')    # GPU 사용 안함
+options.add_argument('headless')        # headless chrome
+options.add_argument('disable-gpu')    # GPU 사용 안함
 options.add_argument('lang=ko_KR')    # 언어 설정
 
 driver = webdriver.Chrome(chromedriver, options=options)
@@ -35,70 +68,24 @@ while True:
     driver.switch_to.default_content()
     driver.switch_to.frame("searchIframe")
 
-    # obj = driver.find_element_by_tag_name('html')
-    # obj.send_keys(Keys.END)
 
-    # last_height = driver.execute_script("return document.body.scrollHeight")
+    time.sleep(1)
 
-    # print(driver.execute_script('return document.body.className'))
-
-    # while True:
-    #     driver.execute_script('window.scrollTo(0, document.body.scrollHeight);')
-
-    #     time.sleep(2)
-
-    #     new_height = driver.execute_script('return document.body.scrollHeight')
-    #     print('new_height : ' + str(new_height) + ' , last_height : ' + str(last_height))
-    #     if(new_height == last_height):
-    #         time.sleep(2)
-    #         new_height = driver.execute_script('return document.body.scrollHeight')
-    #         if(new_height == last_height):
-    #             break
-        
-    #     last_height = new_height
-
-
-    js_script = "document.querySelector(\"#app-root\").innerHTML"
-    raw = driver.execute_script("return " + js_script)
-
-    html = bs(raw, "html.parser")
-
-    lis = html.select('#_pcmap_list_scroll_container > ul > li')
     #_pcmap_list_scroll_container > ul > li:nth-child(45) > div._3ZU00._1rBq3 > a:nth-child(1)
-    print(len(lis))
-    for idx, li in enumerate(lis):
-        el = li.find('span', '_3Apve')
-        name = el.get_text()
-        print(driver.find_element_by_xpath('//*[@id="_pcmap_list_scroll_container"]/ul/li['+str(idx+1)+']/div[2]/a[1]').text)
-        driver.find_element_by_xpath('//*[@id="_pcmap_list_scroll_container"]/ul/li['+str(idx+1)+']/div[2]/a[1]').click()
-       
+    for i in range(0, 5):
+        js_script = "document.querySelector(\"#app-root\").innerHTML"
+        raw = driver.execute_script("return " + js_script)
 
+        html = bs(raw, "html.parser")
 
+        lis = html.select('#_pcmap_list_scroll_container > ul > li')
+        readlis = lis[(10*i):]
+        print(str(len(lis))+" : "+str(i) + " : " + str(len(readlis)))
+        readdata(driver=driver, lis=readlis, index=(10*i))
+
+    try: 
+        driver.find_element_by_css_selector('div._2ky45 > a:last-child').click()
         time.sleep(5)
-
-        driver.switch_to.default_content()
-        driver.switch_to.frame('entryIframe')
-
-        try:
-            elements = WebDriverWait(driver, 5).until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, ".place_on_pcmap"))
-            )
-        except TimeoutException:
-            print('timout!!!!!!')
-        finally:
-            driver.quit() 
-        
-        phone = driver.find_element_by_xpath('//*[@id="app-root"]/div/div[2]/div[4]/div/div[2]/div/ul/li[1]/div/span[1]')
-        addr = driver.find_element_by_xpath('//*[@id="app-root"]/div/div[2]/div[4]/div/div[2]/div/ul/li[2]/div/span[1]')
-        print(str(idx)+ '' + name + '  : ' + phone.text+'  : ' + addr.text)
-        driver.switch_to.default_content()
-        driver.switch_to.frame('searchIframe')
-
-        # driver.find_element_by_xpath('//*[@id="container"]/shrinkable-layout/div/app-base/search-layout/div[2]/entry-layout/entry-close-button/button').click()
-        time.sleep(1)
-
-
-    try: driver.find_element_by_css_selector('a.spnew_bf.cmm_pg_next.on').click()
     except:
         print('done!!!!!')
         break
